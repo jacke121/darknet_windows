@@ -1,0 +1,37 @@
+*.o
+*.dSYM
+*.csv
+*.out
+*.png
+*.so
+mnist/
+caffe/
+grasp/
+images/
+opencv/
+convnet/
+decaf/
+submission/
+
+.fuse*
+
+# OS Generated #
+.DS_Store*
+ehthumbs.db
+Icon?
+Thumbs.db
+*.swp
+
+# CMake #
+cmake-build-debug/
+CMakeLists.txt
+build/darknet/x64/data/voc/
+build/darknet/x64/backup/
+*.opendb
+
+Release
+Debug
+*.74
+*.weights
+opencv_world320.dll
+darknet.VC.db

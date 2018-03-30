@@ -1,0 +1,7 @@
+classes= 1
+train  = data/voc/2007_train.txt
+valid  = data/voc/2007_test.txt
+#difficult = data/voc/difficult_2007_test.txt
+names = voc.names
+backup = backup/
+
