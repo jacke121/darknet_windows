@@ -34,5 +34,7 @@ Debug
 *.74
 *.weights
 opencv_world320.dll
+opencv_world320d.dll
 darknet.VC.db
 tmp
+*.pdb

@@ -268,10 +268,11 @@ layer parse_yolo(list *options, size_params params)
 
 	char *a = option_find_str(options, "mask", 0);
 	int *mask = parse_yolo_mask(a, &num);
-	layer l = make_yolo_layer(params.batch, params.w, params.h, num, total, mask, classes);
+	int max_boxes = option_find_int_quiet(options, "max", 30);
+	layer l = make_yolo_layer(params.batch, params.w, params.h, num, total, mask, classes, max_boxes);
 	assert(l.outputs == params.inputs);
 
-	l.max_boxes = option_find_int_quiet(options, "max", 90);
+	//l.max_boxes = option_find_int_quiet(options, "max", 90);
 	l.jitter = option_find_float(options, "jitter", .2);
 
 	l.ignore_thresh = option_find_float(options, "ignore_thresh", .5);
@@ -311,7 +312,6 @@ layer parse_region(list *options, size_params params)
     l.log = option_find_int_quiet(options, "log", 0);
     l.sqrt = option_find_int_quiet(options, "sqrt", 0);
 
-	l.small_object = option_find_int_quiet(options, "small_object", 0);
     l.softmax = option_find_int(options, "softmax", 0);
 	l.focal_loss = option_find_int_quiet(options, "focal_loss", 0);
     //l.max_boxes = option_find_int_quiet(options, "max",30);
@@ -622,6 +622,7 @@ void parse_net_options(list *options, network *net)
     net->max_crop = option_find_int_quiet(options, "max_crop",net->w*2);
     net->min_crop = option_find_int_quiet(options, "min_crop",net->w);
 
+	net->small_object = option_find_int_quiet(options, "small_object", 0);
     net->angle = option_find_float_quiet(options, "angle", 0);
     net->aspect = option_find_float_quiet(options, "aspect", 1);
     net->saturation = option_find_float_quiet(options, "saturation", 1);

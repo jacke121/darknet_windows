@@ -10,7 +10,7 @@
 #include <string.h>
 #include <stdlib.h>
 
-layer make_yolo_layer(int batch, int w, int h, int n, int total, int *mask, int classes)
+layer make_yolo_layer(int batch, int w, int h, int n, int total, int *mask, int classes, int max_boxes)
 {
     int i;
     layer l = {0};
@@ -38,7 +38,9 @@ layer make_yolo_layer(int batch, int w, int h, int n, int total, int *mask, int 
     l.bias_updates = calloc(n*2, sizeof(float));
     l.outputs = h*w*n*(classes + 4 + 1);
     l.inputs = l.outputs;
-    l.truths = 90*(4 + 1);
+	l.max_boxes = max_boxes;
+	printf(" l.max_boxes = %d \n", l.max_boxes);
+    l.truths = l.max_boxes*(4 + 1);	// 90*(4 + 1);
     l.delta = calloc(batch*l.outputs, sizeof(float));
     l.output = calloc(batch*l.outputs, sizeof(float));
     for(i = 0; i < total*2; ++i){
@@ -224,7 +226,6 @@ void forward_yolo_layer(const layer l, network_state state)
             }
 
             int mask_n = int_index(l.mask, best_n, l.n);
-			printf("lbg mask_n %d \n",mask_n);
             if(mask_n >= 0){
                 int box_index = entry_index(l, b, mask_n*l.w*l.h + j*l.w + i, 0);
                 float iou = delta_yolo_box(truth, l.output, l.biases, best_n, box_index, i, j, l.w, l.h, state.net.w, state.net.h, l.delta, (2-truth.w*truth.h), l.w*l.h);
@@ -395,7 +396,7 @@ void forward_yolo_layer_gpu(const layer l, network_state state)
 	cpu_state.train = state.train;
 	cpu_state.truth = truth_cpu;
 	cpu_state.input = in_cpu;
-	printf("lbg_forward_yolo_layer %d\n", state.truth);
+	//printf("lbg_forward_yolo_layer %d\n", state.truth);
 	forward_yolo_layer(l, cpu_state);
     //forward_yolo_layer(l, state);
     cuda_push_array(l.delta_gpu, l.delta, l.batch*l.outputs);
