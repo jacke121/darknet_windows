@@ -353,20 +353,37 @@ int main(int argc, char **argv)
     //test_resize("data/bad.jpg");
     //test_box();
     //test_convolutional_layer();
+	char buffer[1024];
+	_getcwd(buffer, 1024);
+	printf("argc:%d ptah %s", argc,buffer);
+	int type = 0;
     if(argc < 2){
         fprintf(stderr, "usage: %s <function>\n", argv[0]);
 		argc = 7;
-		argv[1] = "detector";
-		argv[2] = "train";
-		argv[3] = "x64/data/voc_d.data";
-		argv[4] = "x64/cfg/yolov3-voc.cfg";
-		argv[5] = "x64/darknet53.conv.74";
-		argv[6] = "x64/cfg/voc.data";
-		char buffer[1024];
-		_getcwd(buffer, 1024);
-		printf("%s", buffer);
+		if (type) {//train
+			argv[1] = "detector";
+			argv[2] = "train";
+			argv[3] = "x64/data/voc_d.data";
+			argv[4] = "x64/cfg/yolov3-voc.cfg";
+			argv[5] = "x64/darknet53.conv.74";
+			
+		}
+		else {//test
+			argv[1] = "detect";
+			argv[2] = "x64/cfg/yolov3-mouse.cfg";
+			argv[3] = "x64/backup/yolov3-mouse_1000.weights";
+			argv[4] = "x64/data/voc/VOCdevkit/VOC2007/JPEGImages/00030.jpg";
+			argv[5] = "x64/data/voc_d.data";
+			argv[6] = "x64/data/voc_d.data";
+		}
+		
+	
         //return 0;
-    }
+	}
+	else {
+		argc = 7;
+		argv[6] = "cfg/voc.data";
+	}
     gpu_index = find_int_arg(argc, argv, "-i", 0);
     if(find_arg(argc, argv, "-nogpu")) {
         gpu_index = -1;
@@ -393,7 +410,8 @@ int main(int argc, char **argv)
     } else if (0 == strcmp(argv[1], "detect")){
         float thresh = find_float_arg(argc, argv, "-thresh", .24);
         char *filename = (argc > 4) ? argv[4]: 0;
-        test_detector("cfg/coco.data", argv[2], argv[3], filename, thresh);
+		//	void test_detector(char *datacfg, char *cfgfile, char *weightfile, char *filename, float thresh, float hier_thresh, int dont_show)
+        test_detector(argv[6], argv[2], argv[3], filename, thresh);
     } else if (0 == strcmp(argv[1], "cifar")){
         run_cifar(argc, argv);
     } else if (0 == strcmp(argv[1], "go")){

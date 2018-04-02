@@ -26,7 +26,6 @@ Thumbs.db
 cmake-build-debug/
 CMakeLists.txt
 build/darknet/x64/data/voc/
-build/darknet/x64/backup/
 *.opendb
 
 Release
@@ -38,3 +37,11 @@ opencv_world320d.dll
 darknet.VC.db
 tmp
 *.pdb
+backup
+voc2007
+vc140.pdb
+darknet.exe
+darknet.iobj
+darknet.ipdb
+darknet.pdb
+bad.list

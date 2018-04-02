@@ -152,7 +152,7 @@ void train_detector(char *datacfg, char *cfgfile, char *weightfile, int *gpus, i
            }
            save_image(im, "truth11");
          */
-
+		if (i % 10 == 0)
         printf("Loaded: %lf seconds\n", sec(clock()-time));
 
         time=clock();
@@ -170,6 +170,7 @@ void train_detector(char *datacfg, char *cfgfile, char *weightfile, int *gpus, i
         avg_loss = avg_loss*.9 + loss*.1;
 
         i = get_current_batch(net);
+		if (i%10==0)
         printf("\n %d: %f, %f avg, %f rate, %lf seconds, %d images\n", get_current_batch(net), loss, avg_loss, get_current_rate(net), sec(clock()-time), i*imgs);
 
 #ifdef OPENCV
@@ -820,6 +821,20 @@ void validate_detector_map(char *datacfg, char *cfgfile, char *weightfile, float
 }
 
 #ifdef OPENCV
+typedef struct {
+	float w, h;
+} anchors_t;
+
+int anchors_comparator(const void *pa, const void *pb)
+{
+	anchors_t a = *(anchors_t *)pa;
+	anchors_t b = *(anchors_t *)pb;
+	float diff = b.w - a.w;
+	if (diff < 0) return 1;
+	else if (diff > 0) return -1;
+	return 0;
+}
+
 void calc_anchors(char *datacfg, int num_of_clusters, int width, int height, int show)
 {
 	printf("\n num_of_clusters = %d, width = %d, height = %d \n", num_of_clusters, width, height);
@@ -886,7 +901,10 @@ void calc_anchors(char *datacfg, int num_of_clusters, int width, int height, int
 		cvTermCriteria(CV_TERMCRIT_EPS+CV_TERMCRIT_ITER, 10000, 0), attemps, 
 		0, KMEANS_PP_CENTERS,
 		centers, &compactness);
-	
+
+	// sort anchors
+	qsort(centers->data.fl, num_of_clusters, 2*sizeof(float), anchors_comparator);
+
 	//orig 2.0 anchors = 1.08,1.19,  3.42,4.41,  6.63,11.38,  9.42,5.11,  16.62,10.52
 	//float orig_anch[] = { 1.08,1.19,  3.42,4.41,  6.63,11.38,  9.42,5.11,  16.62,10.52 };
 	// worse than ours (even for 19x19 final size - for input size 608x608)
@@ -943,9 +961,12 @@ void calc_anchors(char *datacfg, int num_of_clusters, int width, int height, int
 	printf("anchors = ");
 	for (i = 0; i < num_of_clusters; ++i) {
 		sprintf(buff, "%2.4f,%2.4f", centers->data.fl[i * 2], centers->data.fl[i * 2 + 1]);
-		printf("%s, ", buff);
+		printf("%s", buff);
 		fwrite(buff, sizeof(char), strlen(buff), fw);
-		if (i + 1 < num_of_clusters) fwrite(", ", sizeof(char), 2, fw);;
+		if (i + 1 < num_of_clusters) {
+			fwrite(", ", sizeof(char), 2, fw);
+			printf(", ");
+		}
 	}
 	printf("\n");
 	fclose(fw);
@@ -992,11 +1013,12 @@ void calc_anchors(char *datacfg, int num_of_clusters, int width, int height, int
 
 void test_detector(char *datacfg, char *cfgfile, char *weightfile, char *filename, float thresh, float hier_thresh, int dont_show)
 {
+	dont_show = 0;
     list *options = read_data_cfg(datacfg);
     char *name_list = option_find_str(options, "names", "data/names.list");
     char **names = get_labels(name_list);
 
-    image **alphabet = load_alphabet();
+	image **alphabet = NULL;// load_alphabet();
     network net = parse_network_cfg_custom(cfgfile, 1);
     if(weightfile){
         load_weights(&net, weightfile);
@@ -1039,6 +1061,7 @@ void test_detector(char *datacfg, char *cfgfile, char *weightfile, char *filenam
 		int nboxes = 0;
 		detection *dets = get_network_boxes(&net, im.w, im.h, thresh, hier_thresh, 0, 1, &nboxes, letterbox);
 		if (nms) do_nms_sort_v3(dets, nboxes, l.classes, nms);
+		printf("nboxes %d \n", nboxes);
 		draw_detections_v3(im, dets, nboxes, thresh, names, alphabet, l.classes);
 		free_detections(dets, nboxes);
         save_image(im, "predictions");
