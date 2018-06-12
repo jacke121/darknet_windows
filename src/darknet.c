@@ -356,7 +356,7 @@ int main(int argc, char **argv)
 	char buffer[1024];
 	_getcwd(buffer, 1024);
 	printf("argc:%d ptah %s", argc,buffer);
-	int type = 0;
+	int type = 0;// 1 train 0 test
     if(argc < 2){
         fprintf(stderr, "usage: %s <function>\n", argv[0]);
 		argc = 7;
@@ -371,13 +371,12 @@ int main(int argc, char **argv)
 		else {//test
 			argv[1] = "detect";
 			argv[2] = "x64/cfg/yolov3-mouse.cfg";
-			argv[3] = "x64/backup/yolov3-mouse_1000.weights";
+			argv[3] = "x64/backup/yolov3-mouse_50000.weights";
 			argv[4] = "x64/data/voc/VOCdevkit/VOC2007/JPEGImages/00030.jpg";
 			argv[5] = "x64/data/voc_d.data";
 			argv[6] = "x64/data/voc_d.data";
 		}
 		
-	
         //return 0;
 	}
 	else {
